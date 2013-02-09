@@ -45,7 +45,8 @@ mkfifo client_output client_output_for_request_forming server_output  # create n
 	cat <server_output |
 	nc -lp $port |  # awaiting connection from the client of the port specified
 	tee client_output_for_request_forming | # sending copy of ouput to client_output_for_request_forming pipe
-	tee client_output  # sending copy of ouput to client_output pipe
+	tee client_output|  # sending copy of ouput to client_output pipe
+	sed 's/^/>> /' # adding >> to the beginning of the string
 ) &   # starting subshell in a separate process
 
 
@@ -54,10 +55,8 @@ mkfifo client_output client_output_for_request_forming server_output  # create n
 (
 	while read line;  # read input from client_output_for_request_forming line by line
 	do
-		echo "line read: $line"
 		if [[ $line =~ ^Host:[[:space:]]([[:alnum:]._-]+)(:([[:digit:]]+))?$ ]]
 		then
-			echo "match: $line"
 			server_port=${BASH_REMATCH[3]}  # extracting server port from regular expression
 			if [[ "$server_port" -eq "" ]]
 			then
@@ -65,7 +64,8 @@ mkfifo client_output client_output_for_request_forming server_output  # create n
 			fi
 			host=${BASH_REMATCH[1]}  # extracting host from regular expression
 			nc $host $server_port <client_output |  # connect to the server
-			tee server_output  # send copy to server_output pipe
+			tee server_output  |  # send copy to server_output pipe
+			sed 's/^/<< /' # adding << to the beginning of the string
 			break
 		fi
 	done
