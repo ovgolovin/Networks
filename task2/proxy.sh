@@ -50,7 +50,7 @@ mkfifo client_output client_output_for_request_forming server_output  # create n
 	tee client_output|  # sending copy of ouput to client_output pipe
 	sed 's/^/>> /' # adding >> to the beginning of the string
 ) &   # starting subshell in a separate process
-
+pid=$!
 
 
 # creating another subshell (to feed client_output_for_request_forming to it)
@@ -74,6 +74,7 @@ mkfifo client_output client_output_for_request_forming server_output  # create n
 		
 ) <client_output_for_request_forming
 
+wait $pid # wait for first subshell to finish
 
 rm -f client_output client_output_for_request_forming server_output
 
