@@ -30,7 +30,9 @@ else
 	display_help
 	exit
 fi
-	
+
+
+
 
 while true # infinite loop to await connection from client
 do
